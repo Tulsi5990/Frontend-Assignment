@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import Form from 'react-jsonschema-form';
 
-const recursiveRender = (fields, currentTab = null, selectedPizzaType = null) => {
+const recursiveRender = (fields, currentTab = null, showAdvancedFields = false) => {
   let acc = {};
 
   fields.forEach(field => {
     if (field.uiType === 'Group') {
-      const groupFields = field.subParameters ? recursiveRender(field.subParameters, currentTab, selectedPizzaType) : {};
+      const groupFields = field.subParameters
+        ? recursiveRender(field.subParameters, currentTab, showAdvancedFields)
+        : {};
       acc[field.jsonKey] = {
         type: 'object',
         properties: groupFields.properties,
@@ -17,28 +19,23 @@ const recursiveRender = (fields, currentTab = null, selectedPizzaType = null) =>
         title: field.label,
         enum: field.validate.options.map(option => option.value),
         enumNames: field.validate.options.map(option => option.label),
-        // Added uiType and radioType for rendering radio buttons
         uiType: 'Radio',
         radioType: field.uiType,
       };
-    } else if (field.uiType === 'Ignore' && field.conditions) {
-      const condition = field.conditions.find(cond => cond.action === 'enable');
-      if (condition && condition.value === currentTab) {
-        const ignoreGroupFields = field.subParameters ? recursiveRender(field.subParameters, currentTab, selectedPizzaType) : {};
-        acc[field.jsonKey] = {
-          type: 'object',
-          properties: ignoreGroupFields.properties,
-        };
-      }
-    } else if (field.uiType === 'Input') {
-      acc[field.jsonKey] = { type: 'string', title: field.label };
-    } else if (field.uiType === 'Select' || field.jsonKey === 'slices') {
+    } else if (field.uiType === 'Switch') {
+      // Check if the field is a Switch
       acc[field.jsonKey] = {
-        type: 'string',
+        type: 'boolean',
         title: field.label,
-        enum: field.validate.options.map(option => option.value),
-        enumNames: field.validate.options.map(option => option.label),
       };
+    } else if (field.uiType === 'Input' || field.uiType === 'Select') {
+      // Input and Select fields
+      if (field.jsonKey === 'second_topping' && !showAdvancedFields) {
+        // Skip the "Second Topping" field if advanced fields are not shown
+        return;
+      }
+
+      acc[field.jsonKey] = { type: 'string', title: field.label };
     }
   });
 
@@ -48,20 +45,23 @@ const recursiveRender = (fields, currentTab = null, selectedPizzaType = null) =>
   };
 };
 
-
 const FormGenerator = ({ uiSchema }) => {
   const [formData, setFormData] = useState({});
   const [schema, setSchema] = useState({});
+  const [showAdvancedFields, setShowAdvancedFields] = useState(false);
+  const [uiSchemaParsed, setUiSchemaParsed] = useState(false);
 
   useEffect(() => {
     try {
       const parsedUiSchema = JSON.parse(uiSchema);
-      setSchema(recursiveRender(parsedUiSchema));
-      setFormData(parsedUiSchema.formData);
+      setSchema(recursiveRender(parsedUiSchema, null, showAdvancedFields));
+      // Initialize formData with default values from parsedUiSchema
+      setFormData(parsedUiSchema.formData || {});
+      setUiSchemaParsed(true);
     } catch (error) {
       console.error('Error parsing UI schema:', error);
     }
-  }, [uiSchema]);
+  }, [uiSchema, showAdvancedFields]);
 
   const handleSubmit = ({ formData }) => {
     console.log('Form Data Submitted:', formData);
@@ -71,7 +71,31 @@ const FormGenerator = ({ uiSchema }) => {
   return (
     <div style={{ width: '50%', padding: '20px' }}>
       <h2>Form Renderer</h2>
-      <Form schema={schema} formData={formData} onSubmit={handleSubmit} />
+      {uiSchemaParsed && (
+        <div>
+          <Form schema={schema} formData={formData} onSubmit={handleSubmit} />
+          <div style={{ marginTop: '20px' }}>
+            <label>
+              Include Seasoning
+              <input
+                type="checkbox"
+                checked={formData.include_seasoning}
+                onChange={() => setFormData({ ...formData, include_seasoning: !formData.include_seasoning })}
+              />
+            </label>
+          </div>
+          <div style={{ marginTop: '10px' }}>
+            <label>
+              {showAdvancedFields ? 'Hide' : 'Show'} Advanced Fields
+              <input
+                type="checkbox"
+                checked={showAdvancedFields}
+                onChange={() => setShowAdvancedFields(!showAdvancedFields)}
+              />
+            </label>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

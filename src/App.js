@@ -23,6 +23,7 @@ import React from 'react';
 import JsonEditor from './components/JsonEditor';
 import FormGenerator from './components/FormGenerator';
 
+
 function App() {
   const [uiSchema, setUiSchema] = React.useState('');
 
@@ -34,6 +35,7 @@ function App() {
     <div style={{ display: 'flex' }}>
       <JsonEditor onSchemaChange={handleSchemaChange} />
       <FormGenerator uiSchema={uiSchema} />
+      
     </div>
   );
 }
