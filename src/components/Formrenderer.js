@@ -95,6 +95,7 @@ const FormRenderer = ({ uiSchema }) => {
           />
         </div>
       )}
+      {/* Include other elements within the same div if needed */}
     </div>
   );
 };
