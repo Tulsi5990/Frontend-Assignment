@@ -17,12 +17,15 @@ Getting Started
 To use the React UI Schema Renderer:
 
 Clone the repository.
-git clone <repository-url>
+
+git clone <(https://github.com/Tulsi5990/Frontend-Assignment.git)>
 
 Navigate to the project directory.
-cd <project-directory>
+
+cd <json-form>
 
 Install dependencies.
+
 npm install
 
 Start the application.
