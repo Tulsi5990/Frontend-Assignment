@@ -23,19 +23,30 @@ const recursiveRender = (fields, currentTab = null, showAdvancedFields = false) 
         radioType: field.uiType,
       };
     } else if (field.uiType === 'Switch') {
-      // Check if the field is a Switch
       acc[field.jsonKey] = {
         type: 'boolean',
         title: field.label,
       };
-    } else if (field.uiType === 'Input' || field.uiType === 'Select') {
-      // Input and Select fields
-      if (field.jsonKey === 'second_topping' && !showAdvancedFields) {
-        // Skip the "Second Topping" field if advanced fields are not shown
-        return;
-      }
-
+    } else if (field.uiType === 'Input') {
       acc[field.jsonKey] = { type: 'string', title: field.label };
+    } else if (field.uiType === 'Select') {
+      // Check if the field is "Sauce" or "Main_topping" and add options accordingly
+      if (field.jsonKey === 'sauce' || field.jsonKey === 'main_topping') {
+        acc[field.jsonKey] = {
+          type: 'string',
+          title: field.label,
+          enum: field.validate.options.map((option) => option.value),
+          enumNames: field.validate.options.map((option) => option.label),
+        };
+      } else if (field.jsonKey === 'second_topping' && showAdvancedFields) {
+        // Check if the field is "Second_topping" and "Show Advanced Fields" is true
+        acc[field.jsonKey] = {
+          type: 'string',
+          title: field.label,
+          enum: field.validate.options.map((option) => option.value),
+          enumNames: field.validate.options.map((option) => option.label),
+        };
+      }
     }
   });
 
@@ -45,19 +56,17 @@ const recursiveRender = (fields, currentTab = null, showAdvancedFields = false) 
   };
 };
 
-const FormRenderer = ({ uiSchema }) => {
+
+const FormGenerator = ({ uiSchema }) => {
   const [formData, setFormData] = useState({});
   const [schema, setSchema] = useState({});
   const [showAdvancedFields, setShowAdvancedFields] = useState(false);
-  const [uiSchemaParsed, setUiSchemaParsed] = useState(false);
 
   useEffect(() => {
     try {
       const parsedUiSchema = JSON.parse(uiSchema);
       setSchema(recursiveRender(parsedUiSchema, null, showAdvancedFields));
-      // Initialize formData with default values from parsedUiSchema
-      setFormData(parsedUiSchema.formData || {});
-      setUiSchemaParsed(true);
+      setFormData(parsedUiSchema.formData);
     } catch (error) {
       console.error('Error parsing UI schema:', error);
     }
@@ -69,35 +78,21 @@ const FormRenderer = ({ uiSchema }) => {
   };
 
   return (
-    <div>
+    <div style={{ width: '50%', padding: '20px' }}>
       <h2>Form Renderer</h2>
-      {uiSchemaParsed && (
-        <div>
-          <Form
-            schema={schema}
-            formData={formData}
-            onSubmit={handleSubmit}
-            fields={{
-              // Define a custom field template to include "Show Advanced Fields" within the form
-              'showAdvancedFields': (props) => (
-                <div style={{ marginTop: '10px' }}>
-                  <label>
-                    {showAdvancedFields ? 'Hide' : 'Show'} Advanced Fields
-                    <input
-                      type="checkbox"
-                      checked={showAdvancedFields}
-                      onChange={() => setShowAdvancedFields(!showAdvancedFields)}
-                    />
-                  </label>
-                </div>
-              ),
-            }}
+      <div>
+        <label>
+          Show Advanced Fields
+          <input
+            type="checkbox"
+            checked={showAdvancedFields}
+            onChange={() => setShowAdvancedFields(!showAdvancedFields)}
           />
-        </div>
-      )}
-      {/* Include other elements within the same div if needed */}
+        </label>
+      </div>
+      <Form schema={schema} formData={formData} onSubmit={handleSubmit} />
     </div>
   );
 };
 
-export default FormRenderer;
+export default FormGenerator;

@@ -1,0 +1,27 @@
+/* src/components/JsonEditor.css */
+
+.json-editor-container {
+    width: 40%;
+    padding: 20px;
+    background-color: #bbcdd8; /* Set background color to a green shade */
+    color: #ffffff; /* Set text color to white */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  h2 {
+    color: #ffffff; /* Set heading text color to white */
+  }
+  
+  textarea {
+    width: 95%;
+    height: 60vh;
+    margin-top: 10px; /* Add margin to separate from the heading */
+    padding: 10px;
+    font-size: 14px; /* Adjust font size as needed */
+    border: 1px solid #ffffff; /* Set border color to white */
+    border-radius: 5px;
+    background-color: #34495e; /* Set textarea background color to a dark shade */
+    color: #ecf0f1; /* Set textarea text color to a light shade */
+  }
+  

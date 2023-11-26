@@ -1,5 +1,6 @@
 // src/components/JsonEditor.js
 import React, { useState } from 'react';
+import './jsonEditor.css'; // Import the CSS file
 
 const JsonEditor = ({ onSchemaChange }) => {
   const [schema, setSchema] = useState('');
@@ -11,13 +12,12 @@ const JsonEditor = ({ onSchemaChange }) => {
   };
 
   return (
-    <div style={{ width: '50%', padding: '20px' }}>
-      <h2>JSON Editor</h2>
+    <div className="json-editor-container">
+      <h2>JSON EDITOR</h2>
       <textarea
         value={schema}
         onChange={handleInputChange}
         placeholder="Paste UI Schema here"
-        style={{ width: '100%', height: '80vh' }}
       />
     </div>
   );

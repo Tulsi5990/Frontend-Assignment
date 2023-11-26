@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Form from 'react-jsonschema-form';
+import './FormGenerator.css'; // Import a separate CSS file for styling
 
 const recursiveRender = (fields, currentTab = null, showAdvancedFields = false) => {
   let acc = {};
@@ -30,23 +31,16 @@ const recursiveRender = (fields, currentTab = null, showAdvancedFields = false) 
     } else if (field.uiType === 'Input') {
       acc[field.jsonKey] = { type: 'string', title: field.label };
     } else if (field.uiType === 'Select') {
-      // Check if the field is "Sauce" or "Main_topping" and add options accordingly
-      if (field.jsonKey === 'sauce' || field.jsonKey === 'main_topping') {
-        acc[field.jsonKey] = {
-          type: 'string',
-          title: field.label,
-          enum: field.validate.options.map((option) => option.value),
-          enumNames: field.validate.options.map((option) => option.label),
-        };
-      } else if (field.jsonKey === 'second_topping' && showAdvancedFields) {
-        // Check if the field is "Second_topping" and "Show Advanced Fields" is true
-        acc[field.jsonKey] = {
-          type: 'string',
-          title: field.label,
-          enum: field.validate.options.map((option) => option.value),
-          enumNames: field.validate.options.map((option) => option.label),
-        };
+      if (field.jsonKey === 'second_topping' && !showAdvancedFields) {
+        // Skip rendering "second_topping" when showAdvancedFields is false
+        return;
       }
+      acc[field.jsonKey] = {
+        type: 'string',
+        title: field.label,
+        enum: field.validate.options.map((option) => option.value),
+        enumNames: field.validate.options.map((option) => option.label),
+      };
     }
   });
 
@@ -56,11 +50,19 @@ const recursiveRender = (fields, currentTab = null, showAdvancedFields = false) 
   };
 };
 
+// ... (import statements)
+
+// ... (import statements)
+
+const defaultSchema = {
+  type: 'object',
+  properties: {},
+};
 
 const FormGenerator = ({ uiSchema }) => {
   const [formData, setFormData] = useState({});
-  const [schema, setSchema] = useState({});
-  const [showAdvancedFields, setShowAdvancedFields] = useState(false);
+  const [schema, setSchema] = useState(defaultSchema); // Use defaultSchema initially
+  const [showAdvancedFields, setShowAdvancedFields] = useState(true);
 
   useEffect(() => {
     try {
@@ -77,20 +79,30 @@ const FormGenerator = ({ uiSchema }) => {
     // Implement logic to send formData to the backend
   };
 
+  const showToggle = Object.keys(schema.properties || {}).length > 0;
+
   return (
-    <div style={{ width: '50%', padding: '20px' }}>
-      <h2>Form Renderer</h2>
-      <div>
-        <label>
-          Show Advanced Fields
-          <input
-            type="checkbox"
-            checked={showAdvancedFields}
-            onChange={() => setShowAdvancedFields(!showAdvancedFields)}
-          />
-        </label>
-      </div>
-      <Form schema={schema} formData={formData} onSubmit={handleSubmit} />
+    <div className="form-container">
+      <h2>FORM GENERATED</h2>
+      <Form schema={schema} formData={formData} onSubmit={handleSubmit}>
+        {/* Always render the toggle */}
+        {showToggle && (
+          <div className="toggle-container">
+            <label className="toggle-label">Show Advanced Fields</label>
+            <div className="toggle-switch">
+              <input
+                type="checkbox"
+                className="toggle-input"
+                checked={showAdvancedFields}
+                onChange={() => setShowAdvancedFields(!showAdvancedFields)}
+              />
+              <span className="toggle-slider"></span>
+            </div>
+          </div>
+        )}
+        {/* Render a default submit button even if the schema is empty */}
+        <button type="submit">Submit</button>
+      </Form>
     </div>
   );
 };
