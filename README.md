@@ -22,7 +22,7 @@ git clone <https://github.com/Tulsi5990/Frontend-Assignment.git>
 
 Navigate to the project directory.
 
-cd <[Project Directory](./)>
+cd path-to-your-project-directory
 
 
 Install dependencies.
